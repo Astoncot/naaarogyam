@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#000000">
+    <title>NaaAarogyam</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <style>
+/* ====== RESET & BASE ====== */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+    --bg: #000000;
+    --card: #1c1c1e;
+    --card2: #2c2c2e;
+    --text: #ffffff;
+    --text2: #aeaeb2;
+    --text3: #636366;
+    --accent: #0a84ff;
+    --green: #30d158;
+    --orange: #ff9f0a;
+    --red: #ff453a;
+    --purple: #bf5af2;
+    --indigo: #5e5ce6;
+    --cyan: #64d2ff;
+    --blue: #0a84ff;
+    --pink: #ff375f;
+    --yellow: #ffd60a;
+    --safe-bottom: env(safe-area-inset-bottom, 20px);
+}
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro', 'Helvetica Neue', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+}
+#app {
+    padding: 60px 16px 100px;
+    max-width: 500px;
+    margin: 0 auto;
+    min-height: 100vh;
+}
+
+/* ====== TAB BAR ====== */
+#tab-bar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    display: flex;
+    justify-content: space-around;
+    background: rgba(28,28,30,0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding: 8px 0 calc(8px + var(--safe-bottom));
+    border-top: 0.5px solid rgba(255,255,255,0.1);
+    z-index: 100;
+}
+.tab {
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    background: none; border: none; color: var(--text3);
+    font-size: 10px; cursor: pointer; padding: 4px 12px; transition: color 0.2s;
+}
+.tab.active { color: var(--accent); }
+.tab-icon { font-size: 22px; }
+.tab-label { font-weight: 500; }
+
+/* ====== CARDS ====== */
+.card {
+    background: var(--card); border-radius: 16px; padding: 16px; margin-bottom: 16px;
+}
+.card-title {
+    font-size: 15px; font-weight: 600; margin-bottom: 12px;
+    display: flex; align-items: center; gap: 6px;
+}
+
+/* ====== PAGE HEADER ====== */
+.page-header {
+    position: fixed; top: 0; left: 0; right: 0;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    padding: 16px; z-index: 50; text-align: center;
+}
+.page-header h1 { font-size: 20px; font-weight: 700; }
+.page-header .subtitle { font-size: 12px; color: var(--text2); margin-top: 2px; }
+
+/* ====== COMPLIANCE RING ====== */
+.ring-container { position: relative; width: 90px; height: 90px; flex-shrink: 0; }
+.ring-container svg { transform: rotate(-90deg); }
+.ring-text {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%); text-align: center;
+}
+.ring-percent { font-size: 20px; font-weight: 700; }
+.ring-label { font-size: 9px; color: var(--text2); }
+
+/* ====== TODAY CARD ====== */
+.today-card { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.today-info h2 { font-size: 20px; font-weight: 700; }
+.today-location { font-size: 14px; color: var(--text2); margin: 4px 0 8px; }
+.metric-chips { display: flex; gap: 12px; flex-wrap: wrap; }
+.metric-chip { font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 4px; }
+
+/* ====== STREAK ====== */
+.streak-card { display: flex; justify-content: space-between; align-items: center; }
+.streak-number { font-size: 32px; font-weight: 800; }
+
+/* ====== PERIOD PICKER ====== */
+.period-picker { display: flex; background: var(--card); border-radius: 10px; overflow: hidden; margin-bottom: 16px; }
+.period-btn {
+    flex: 1; padding: 10px; text-align: center; background: none; border: none;
+    color: var(--text); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+}
+.period-btn.active { background: var(--accent); color: white; }
+
+/* ====== INSIGHTS GRID ====== */
+.insights-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.insight-pill { text-align: center; padding: 10px 4px; border-radius: 10px; background: rgba(255,255,255,0.05); }
+.insight-value { font-size: 16px; font-weight: 700; }
+.insight-label { font-size: 10px; color: var(--text2); margin-top: 2px; }
+
+/* ====== CHART ====== */
+.chart-container { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.bar-chart { display: flex; align-items: stretch; gap: 3px; height: 140px; padding: 0 2px; min-width: fit-content; }
+.bar-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 4px; min-width: 20px; flex: 1; }
+.bar { width: 100%; min-width: 14px; max-width: 28px; border-radius: 4px 4px 2px 2px; transition: height 0.5s ease; }
+.bar-label { font-size: 9px; color: var(--text3); }
+.bar-val { font-size: 8px; font-weight: 600; line-height: 1; }
+
+/* ====== LOCATION PICKER ====== */
+.location-picker { display: flex; gap: 8px; margin-bottom: 16px; }
+.loc-btn {
+    flex: 1; padding: 14px 8px; text-align: center; background: var(--card);
+    border: 2px solid transparent; border-radius: 14px; color: var(--text); cursor: pointer; transition: all 0.2s;
+}
+.loc-btn.active { border-color: var(--accent); background: rgba(10,132,255,0.15); }
+.loc-emoji { font-size: 24px; }
+.loc-name { font-size: 12px; font-weight: 600; margin-top: 4px; }
+.loc-count { font-size: 10px; color: var(--text2); }
+
+/* ====== HABIT SECTION ====== */
+.habit-section { margin-bottom: 16px; }
+.habit-category-label {
+    font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+    margin-bottom: 6px; padding-left: 4px; display: flex; align-items: center; gap: 6px;
+}
+.habit-list { background: var(--card); border-radius: 14px; overflow: hidden; }
+.habit-row {
+    display: flex; align-items: center; padding: 14px; gap: 14px;
+    cursor: pointer; transition: background 0.15s;
+    border-bottom: 0.5px solid rgba(255,255,255,0.05);
+    -webkit-tap-highlight-color: transparent;
+}
+.habit-row:last-child { border-bottom: none; }
+.habit-row:active { background: rgba(255,255,255,0.05); }
+.habit-check {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; flex-shrink: 0; transition: all 0.2s;
+}
+.habit-check.unchecked { background: var(--card2); }
+.habit-check.checked { color: white; }
+.habit-name { font-size: 15px; font-weight: 500; flex: 1; }
+.habit-name.done { text-decoration: line-through; color: var(--text2); }
+.habit-note { font-size: 11px; color: var(--text3); }
+.habit-time {
+    font-size: 11px; color: var(--text2); background: var(--card2);
+    padding: 3px 8px; border-radius: 10px; flex-shrink: 0;
+}
+
+/* ====== SUMMARY BAR ====== */
+.summary-bar { display: flex; background: var(--card); border-radius: 14px; margin-bottom: 16px; overflow: hidden; }
+.summary-pill { flex: 1; text-align: center; padding: 12px 8px; border-right: 0.5px solid rgba(255,255,255,0.05); }
+.summary-pill:last-child { border-right: none; }
+.summary-value { font-size: 18px; font-weight: 700; }
+.summary-label { font-size: 10px; color: var(--text2); margin-top: 2px; }
+
+/* ====== VITALS FORM ====== */
+.form-section { margin-bottom: 20px; }
+.form-section-title {
+    font-size: 13px; font-weight: 600; text-transform: uppercase; color: var(--text2);
+    margin-bottom: 8px; display: flex; align-items: center; gap: 6px;
+}
+.form-group { background: var(--card); border-radius: 14px; overflow: hidden; }
+.form-row {
+    display: flex; align-items: center; padding: 12px 14px; gap: 12px;
+    border-bottom: 0.5px solid rgba(255,255,255,0.05);
+}
+.form-row:last-child { border-bottom: none; }
+.form-icon { font-size: 18px; width: 28px; text-align: center; flex-shrink: 0; }
+.form-label { font-size: 14px; color: var(--text2); min-width: 100px; }
+.form-input, .form-select {
+    flex: 1; background: var(--card2); border: none; border-radius: 8px;
+    padding: 8px 12px; color: var(--text); font-size: 16px; text-align: right; outline: none;
+}
+.form-select { appearance: none; -webkit-appearance: none; padding-right: 28px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23aeaeb2' d='M2 4l4 4 4-4'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 10px center;
+}
+.form-select option { background: #2c2c2e; color: #fff; }
+.form-input::placeholder { color: var(--text3); }
+.form-input:focus, .form-select:focus { box-shadow: 0 0 0 1px var(--accent); }
+.form-calc { font-size: 12px; color: var(--text3); margin-left: 4px; }
+
+.save-btn {
+    width: 100%; padding: 16px; background: var(--accent); color: white;
+    border: none; border-radius: 14px; font-size: 16px; font-weight: 600;
+    cursor: pointer; transition: opacity 0.2s;
+}
+.save-btn:active { opacity: 0.8; }
+.save-btn.secondary { background: var(--green); }
+
+/* ====== HISTORY ====== */
+.history-row {
+    display: flex; align-items: center; padding: 14px; gap: 14px;
+    border-bottom: 0.5px solid rgba(255,255,255,0.05);
+}
+.history-row:last-child { border-bottom: none; }
+.history-date { text-align: center; min-width: 44px; }
+.history-day { font-size: 10px; font-weight: 600; color: var(--text2); }
+.history-num { font-size: 22px; font-weight: 700; }
+.history-month { font-size: 10px; color: var(--text2); }
+.history-info { flex: 1; }
+.history-location { font-size: 14px; font-weight: 500; }
+.history-metrics { font-size: 12px; color: var(--text2); margin-top: 2px; display: flex; gap: 10px; }
+.history-badge {
+    padding: 4px 10px; border-radius: 12px; font-size: 13px; font-weight: 700; flex-shrink: 0;
+}
+
+/* ====== ADD ENTRY FORM ====== */
+.add-entry-toggle {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 14px; background: rgba(10,132,255,0.12); border-radius: 14px;
+    color: var(--accent); font-size: 15px; font-weight: 600; cursor: pointer;
+    margin-bottom: 16px; border: none; width: 100%;
+}
+.add-entry-form { background: var(--card); border-radius: 14px; padding: 16px; margin-bottom: 16px; }
+.add-entry-form .form-row { padding: 10px 0; border-bottom: 0.5px solid rgba(255,255,255,0.05); }
+.add-entry-form .form-row:last-child { border-bottom: none; }
+
+/* ====== OUTCOMES / LABS ====== */
+.lab-card { background: var(--card); border-radius: 12px; padding: 12px; margin-bottom: 10px; }
+.lab-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.lab-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.lab-name { font-size: 14px; font-weight: 600; flex: 1; }
+.lab-unit { font-size: 11px; color: var(--text2); }
+.lab-values { display: flex; align-items: center; gap: 12px; font-size: 12px; }
+.lab-val-group { text-align: center; }
+.lab-val-label { font-size: 10px; color: var(--text3); }
+.lab-val-num { font-weight: 600; margin-top: 1px; }
+.lab-arrow { color: var(--text3); }
+.lab-ref { font-size: 10px; color: var(--text3); margin-top: 6px; }
+.lab-input-row {
+    display: flex; gap: 8px; margin-top: 8px; align-items: center;
+}
+.lab-input-row input {
+    flex: 1; background: var(--card2); border: none; border-radius: 8px;
+    padding: 6px 10px; color: var(--text); font-size: 13px; outline: none;
+}
+.lab-input-row input:focus { box-shadow: 0 0 0 1px var(--accent); }
+.lab-input-row button {
+    background: var(--accent); color: white; border: none; border-radius: 8px;
+    padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap;
+}
+
+.cat-picker {
+    display: flex; gap: 6px; overflow-x: auto; margin-bottom: 16px;
+    padding-bottom: 4px; -webkit-overflow-scrolling: touch;
+}
+.cat-btn {
+    padding: 8px 16px; border-radius: 20px; border: none; font-size: 13px;
+    font-weight: 500; cursor: pointer; white-space: nowrap; transition: all 0.2s;
+    background: var(--card); color: var(--text);
+}
+.cat-btn.active { background: var(--accent); color: white; }
+
+/* ====== WEIGHT ====== */
+.weight-summary { display: flex; gap: 20px; margin-top: 10px; }
+.weight-stat-label { font-size: 10px; color: var(--text3); }
+.weight-stat-value { font-size: 13px; font-weight: 700; margin-top: 2px; }
+
+/* ====== MONTHLY BREAKDOWN ====== */
+.month-card { background: var(--card2); border-radius: 10px; padding: 12px; margin-bottom: 8px; }
+.month-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.month-name { font-size: 14px; font-weight: 600; }
+.month-days { font-size: 11px; color: var(--text2); }
+.month-metrics { display: flex; gap: 12px; }
+.month-metric { text-align: center; flex: 1; }
+.month-metric-value { font-size: 13px; font-weight: 700; }
+.month-metric-label { font-size: 9px; color: var(--text2); }
+
+/* ====== MILESTONE ====== */
+.milestone-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; }
+.milestone-icon { font-size: 18px; width: 24px; text-align: center; }
+.milestone-title { font-size: 14px; font-weight: 500; }
+.milestone-detail { font-size: 11px; color: var(--text2); }
+
+/* ====== BASELINE BANNER ====== */
+.baseline-banner {
+    background: rgba(255,159,10,0.12); border-radius: 12px; padding: 14px;
+    margin-bottom: 16px; display: flex; align-items: center; gap: 12px;
+}
+.baseline-icon { font-size: 24px; }
+.baseline-title { font-size: 13px; font-weight: 600; }
+.baseline-sub { font-size: 11px; color: var(--text2); }
+
+/* ====== METRICS GRID ====== */
+.metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.metric-card { background: var(--card); border-radius: 14px; padding: 14px; }
+.metric-card-header { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+.metric-card-icon { font-size: 12px; }
+.metric-card-title { font-size: 11px; color: var(--text2); font-weight: 500; }
+.metric-card-value { font-size: 22px; font-weight: 700; }
+.metric-card-sub { font-size: 10px; color: var(--text3); margin-top: 2px; }
+
+/* ====== TOAST ====== */
+.toast {
+    position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
+    background: var(--green); color: white; padding: 10px 24px; border-radius: 20px;
+    font-size: 14px; font-weight: 600; z-index: 200; opacity: 0; transition: opacity 0.3s;
+}
+.toast.show { opacity: 1; }
+
+/* ====== TOOLS GRID ====== */
+.tools-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.tool-btn {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+    padding: 16px 10px; background: var(--card2); border-radius: 12px; border: none;
+    color: var(--text); font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+    -webkit-tap-highlight-color: transparent;
+}
+.tool-btn:active { opacity: 0.7; transform: scale(0.97); }
+.tool-btn .tool-icon { font-size: 24px; }
+.tool-btn .tool-label { color: var(--text2); font-size: 11px; font-weight: 400; margin-top: 2px; }
+#import-file-input { display: none; }
+
+/* ====== ANIMATIONS ====== */
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.card { animation: fadeIn 0.3s ease; }
+    </style>
+</head>
+<body>
+    <div id="app"></div>
+    <nav id="tab-bar">
+        <button class="tab active" data-tab="dashboard"><span class="tab-icon">📊</span><span class="tab-label">Dashboard</span></button>
+        <button class="tab" data-tab="checklist"><span class="tab-icon">✅</span><span class="tab-label">Today</span></button>
+        <button class="tab" data-tab="vitals"><span class="tab-icon">❤️</span><span class="tab-label">Vitals</span></button>
+        <button class="tab" data-tab="history"><span class="tab-icon">📅</span><span class="tab-label">History</span></button>
+        <button class="tab" data-tab="outcomes"><span class="tab-icon">🎯</span><span class="tab-label">Outcomes</span></button>
+    </nav>
+
+    <script>
+// ====== HABIT DEFINITIONS ======
+var CATEGORIES = {
+    exercise:   { name: 'Exercise & Yoga', color: '#ff9f0a', icon: '🏃' },
+    nutrition:  { name: 'Nutrition',       color: '#30d158', icon: '🍽️' },
+    fasting:    { name: 'Fasting',         color: '#bf5af2', icon: '⏱️' },
+    medication: { name: 'Medication',      color: '#ff453a', icon: '💊' },
+    meditation: { name: 'Meditation',      color: '#64d2ff', icon: '🧘' },
+    sleep:      { name: 'Sleep',           color: '#5e5ce6', icon: '🌙' },
+};
+
+var HABITS = [
+    // EXERCISE & YOGA
+    { id: 'yoga',       name: 'Yoga (5:45–7 AM)',      category: 'exercise',   locations: ['BLR','HYD','Travel'], time: '5:45 AM' },
+    { id: 'resistance', name: 'Resistance Training',    category: 'exercise',   locations: ['BLR','HYD','Travel'] },
+    { id: 'treadmill',  name: 'Treadmill 30 min',       category: 'exercise',   locations: ['BLR'], note: 'BLR only' },
+
+    // NUTRITION
+    { id: 'protein_shake', name: 'Protein Shake (8:30 AM)',            category: 'nutrition', locations: ['BLR','HYD'], time: '8:30 AM' },
+    { id: 'soaked_nuts',   name: 'Soaked Nuts (8:30 AM)',              category: 'nutrition', locations: ['BLR','HYD'], time: '8:30 AM' },
+    { id: 'amla_fruits',   name: 'Amla + Fruits (8:30 AM)',            category: 'nutrition', locations: ['BLR','HYD'], time: '8:30 AM' },
+    { id: 'breakfast',     name: 'Fibre & Protein in Breakfast',       category: 'nutrition', locations: ['BLR','HYD','Travel'], time: '8:45 AM', note: 'High fibre + protein focus' },
+    { id: 'lunch_protein', name: 'Protein in Lunch with Min Carbs',    category: 'nutrition', locations: ['BLR','HYD','Travel'], note: 'Prioritise protein, minimise carbs' },
+    { id: 'acv_lunch',     name: 'ACV before Lunch',                   category: 'nutrition', locations: ['BLR'], time: '12:30 PM', note: 'Apple Cider Vinegar' },
+    { id: 'protein_bar',   name: 'Protein Bar (4 PM)',                 category: 'nutrition', locations: ['BLR','HYD','Travel'], time: '4:00 PM', note: 'Yogabar 20g / Whole Truth' },
+
+    // FASTING
+    { id: 'no_dinner_after6', name: 'No Dinner After 6 PM', category: 'fasting', locations: ['BLR','Travel'], time: '6:00 PM', note: 'No dinner after 6 PM' },
+    { id: 'light_dinner',     name: 'Light Dinner Only',     category: 'fasting', locations: ['HYD'], note: 'HYD only – keep it light' },
+
+    // MEDICATION
+    { id: 'thyronorm', name: 'Thyronorm (4:45 AM)',      category: 'medication', locations: ['BLR','HYD','Travel'], time: '4:45 AM', note: 'On empty stomach' },
+    { id: 'rozat',     name: 'Rozat 5mg – Bedtime',      category: 'medication', locations: ['BLR','HYD','Travel'], time: '9:45 PM', note: 'With dinner / bedtime' },
+    { id: 'folinext',  name: 'Folinext Gold (8:30 AM)',   category: 'medication', locations: ['BLR','HYD','Travel'], time: '8:30 AM', note: 'After breakfast' },
+
+    // MEDITATION
+    { id: 'shoonya_afternoon', name: 'Afternoon Shoonya (15 min)', category: 'meditation', locations: ['BLR','HYD','Travel'], time: '1:00 PM', note: 'Min 15 mins for compliance' },
+    { id: 'shoonya_evening',   name: 'Evening Shoonya (15 min)',   category: 'meditation', locations: ['BLR','HYD','Travel'], time: '8:00 PM', note: 'Min 15 mins for compliance' },
+
+    // SLEEP
+    { id: 'sleep_target', name: 'Sleep Target (9:45 PM)', category: 'sleep', locations: ['BLR','HYD','Travel'], time: '9:45 PM', note: 'Wind down for 9:45 PM sleep' },
+];
+
+var LOCATIONS = {
+    BLR:    { name: 'Bangalore', emoji: '🏠' },
+    HYD:    { name: 'Hyderabad', emoji: '🏡' },
+    Travel: { name: 'Travel',    emoji: '✈️' },
+};
+
+var LAB_DEFAULTS = [
+    { parameter: 'HbA1c',           unit: '%',      ref: '<5.7',      baseline: '6.0',   target: '<5.5',    status: 'red',    category: 'metabolic' },
+    { parameter: 'Fasting Glucose',  unit: 'mg/dL',  ref: '70–100',    baseline: '90',    target: '<90',     status: 'yellow', category: 'metabolic' },
+    { parameter: 'Fasting Insulin',  unit: 'uIU/mL', ref: '2–25',      baseline: '—',     target: '<10',     status: 'yellow', category: 'metabolic' },
+    { parameter: 'TSH',              unit: 'uIU/mL', ref: '0.27–4.20', baseline: '9.2',   target: '1.0–3.0', status: 'red',    category: 'thyroid' },
+    { parameter: 'Free T3',          unit: 'pg/mL',  ref: '2.0–4.4',   baseline: '—',     target: '3.0–4.0', status: 'yellow', category: 'thyroid' },
+    { parameter: 'Free T4',          unit: 'ng/dL',  ref: '0.93–1.7',  baseline: '—',     target: '1.2–1.5', status: 'yellow', category: 'thyroid' },
+    { parameter: 'Total Cholesterol',unit: 'mg/dL',  ref: '<200',      baseline: '239',   target: '<200',    status: 'red',    category: 'lipids' },
+    { parameter: 'LDL-C',            unit: 'mg/dL',  ref: '<100',      baseline: '157.6', target: '<100',    status: 'red',    category: 'lipids' },
+    { parameter: 'HDL-C',            unit: 'mg/dL',  ref: '>40',       baseline: '62',    target: '>60',     status: 'green',  category: 'lipids' },
+    { parameter: 'Triglycerides',    unit: 'mg/dL',  ref: '<150',      baseline: '97',    target: '<100',    status: 'green',  category: 'lipids' },
+    { parameter: 'ALT',              unit: 'U/L',    ref: '0–50',      baseline: '38',    target: '<25',     status: 'yellow', category: 'lipids' },
+    { parameter: 'hs-CRP',           unit: 'mg/L',   ref: '<1.0',      baseline: '2.69',  target: '<1.0',    status: 'red',    category: 'other' },
+    { parameter: 'Vitamin D',        unit: 'ng/mL',  ref: '30–100',    baseline: '21.3',  target: '40–60',   status: 'red',    category: 'other' },
+    { parameter: 'Vitamin B12',      unit: 'pg/mL',  ref: '211–946',   baseline: '213',   target: '>400',    status: 'yellow', category: 'other' },
+    { parameter: 'Weight',           unit: 'kg',     ref: '—',         baseline: '72',    target: '66–67',   status: 'red',    category: 'other' },
+    { parameter: 'BMI',              unit: 'kg/m²',  ref: '18.5–22.9', baseline: '26.45', target: '<24',     status: 'yellow', category: 'other' },
+    { parameter: 'Blood Pressure',   unit: 'mmHg',   ref: '<130/80',   baseline: '140/80',target: '<125/80', status: 'red',    category: 'other' },
+];
+
+// ====== PREDEFINED TIME OPTIONS ======
+var BEDTIME_OPTIONS = [];
+// 8:00 PM to 1:00 AM in 15-min steps
+(function() {
+    var starts = [
+        {h:20,label:'8:00 PM'},{h:20.25,label:'8:15 PM'},{h:20.5,label:'8:30 PM'},{h:20.75,label:'8:45 PM'},
+        {h:21,label:'9:00 PM'},{h:21.25,label:'9:15 PM'},{h:21.5,label:'9:30 PM'},{h:21.75,label:'9:45 PM'},
+        {h:22,label:'10:00 PM'},{h:22.25,label:'10:15 PM'},{h:22.5,label:'10:30 PM'},{h:22.75,label:'10:45 PM'},
+        {h:23,label:'11:00 PM'},{h:23.25,label:'11:15 PM'},{h:23.5,label:'11:30 PM'},{h:23.75,label:'11:45 PM'},
+        {h:0,label:'12:00 AM'},{h:0.25,label:'12:15 AM'},{h:0.5,label:'12:30 AM'},{h:0.75,label:'12:45 AM'},
+        {h:1,label:'1:00 AM'}
+    ];
+    starts.forEach(function(s) { BEDTIME_OPTIONS.push(s.label); });
+})();
+
+var WAKEUP_OPTIONS = [];
+(function() {
+    var starts = [
+        {h:3,label:'3:00 AM'},{h:3.25,label:'3:15 AM'},{h:3.5,label:'3:30 AM'},{h:3.75,label:'3:45 AM'},
+        {h:4,label:'4:00 AM'},{h:4.25,label:'4:15 AM'},{h:4.5,label:'4:30 AM'},{h:4.75,label:'4:45 AM'},
+        {h:5,label:'5:00 AM'},{h:5.25,label:'5:15 AM'},{h:5.5,label:'5:30 AM'},{h:5.75,label:'5:45 AM'},
+        {h:6,label:'6:00 AM'},{h:6.25,label:'6:15 AM'},{h:6.5,label:'6:30 AM'},{h:6.75,label:'6:45 AM'},
+        {h:7,label:'7:00 AM'},{h:7.25,label:'7:15 AM'},{h:7.5,label:'7:30 AM'},{h:7.75,label:'7:45 AM'},
+        {h:8,label:'8:00 AM'},{h:8.25,label:'8:15 AM'},{h:8.5,label:'8:30 AM'},{h:8.75,label:'8:45 AM'},
+        {h:9,label:'9:00 AM'}
+    ];
+    starts.forEach(function(s) { WAKEUP_OPTIONS.push(s.label); });
+})();
+
+// ====== LOCAL STORAGE DB ======
+var DB = {
+    _key: 'naaarogyam_data',
+    load: function() { try { return JSON.parse(localStorage.getItem(this._key)) || {}; } catch(e) { return {}; } },
+    save: function(data) { localStorage.setItem(this._key, JSON.stringify(data)); },
+    getEntry: function(dateStr) { var data = this.load(); return data[dateStr] || null; },
+    saveEntry: function(dateStr, entry) { var data = this.load(); data[dateStr] = entry; this.save(data); },
+    getAllEntries: function() {
+        var data = this.load();
+        return Object.keys(data).map(function(date) { return Object.assign({ date: date }, data[date]); })
+            .sort(function(a, b) { return b.date.localeCompare(a.date); });
+    },
+    todayStr: function() { return new Date().toISOString().split('T')[0]; },
+    getLabs: function() { try { return JSON.parse(localStorage.getItem('naaarogyam_labs')) || null; } catch(e) { return null; } },
+    saveLabs: function(labs) { localStorage.setItem('naaarogyam_labs', JSON.stringify(labs)); }
+};
+
+function getHabitsForLocation(loc) { return HABITS.filter(function(h) { return h.locations.indexOf(loc) >= 0; }); }
+function dateToDay(ds) { return ['SUN','MON','TUE','WED','THU','FRI','SAT'][new Date(ds+'T12:00:00').getDay()]; }
+function dateToNum(ds) { return new Date(ds+'T12:00:00').getDate(); }
+function dateToMonth(ds) { return ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'][new Date(ds+'T12:00:00').getMonth()]; }
+function dateToMonthYear(ds) { var d=new Date(ds+'T12:00:00'); var m=['January','February','March','April','May','June','July','August','September','October','November','December']; return m[d.getMonth()]+' '+d.getFullYear(); }
+function isSunday(ds) { return new Date(ds+'T12:00:00').getDay()===0; }
+function complianceColor(p) { return p>=80?'#30d158':p>=60?'#ff9f0a':'#ff453a'; }
+function todayDateDisplay() { var d=new Date(); var days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat']; var months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; return days[d.getDay()]+', '+d.getDate()+' '+months[d.getMonth()]+' '+d.getFullYear(); }
+
+function parseTimeToMins(str) {
+    if(!str) return null;
+    var t=str.trim();
+    var m24=t.match(/^(\d{1,2}):(\d{2})$/);
+    if(m24){var h=parseInt(m24[1]),m=parseInt(m24[2]);if(h>=0&&h<24&&m>=0&&m<60)return h*60+m;}
+    var m12=t.toUpperCase().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/);
+    if(m12){var h=parseInt(m12[1]),m=parseInt(m12[2]);if(m12[3]==='PM'&&h!==12)h+=12;if(m12[3]==='AM'&&h===12)h=0;return h*60+m;}
+    return null;
+}
+
+function calcSleepHours(bedtime,wakeup) {
+    var b=parseTimeToMins(bedtime),w=parseTimeToMins(wakeup);
+    if(b===null||w===null)return null;
+    var diff=w>b?(w-b):(1440-b+w);
+    return (diff/60).toFixed(1);
+}
+
+function getMondayOfWeek(date) {
+    var d = new Date(date);
+    var day = d.getDay();
+    var diff = (day === 0) ? 6 : day - 1;
+    d.setDate(d.getDate() - diff);
+    d.setHours(0,0,0,0);
+    return d;
+}
+
+// ====== APP STATE ======
+var currentTab = 'dashboard';
+var currentLocation = localStorage.getItem('naa_location') || 'BLR';
+var selectedPeriod = 'week';
+var selectedLabCat = 'metabolic';
+var showAddEntry = false;
+var editingHistoryDate = null;
+
+// ====== SEED HISTORICAL DATA FROM iOS APP ======
+function seedHistoricalData() {
+    if (localStorage.getItem('naaarogyam_seeded_v3')) return;
+    var S = {
+"2026-03-01":{location:"HYD",completedHabits:["yoga","thyronorm","rozat"],steps:0,waterGlasses:6,sleepHours:6,bedtime:"10:30 PM",weightKg:73},
+"2026-03-02":{location:"Travel",completedHabits:["yoga","breakfast","lunch_protein","thyronorm","rozat"],steps:6370,waterGlasses:5,sleepHours:4.5,bedtime:"11:30 PM"},
+"2026-03-03":{location:"HYD",completedHabits:["yoga","breakfast","lunch_protein","thyronorm"],steps:2161,waterGlasses:6,sleepHours:6,bedtime:"10:30 PM"},
+"2026-03-04":{location:"Travel",completedHabits:["yoga","breakfast","lunch_protein"],steps:3932,waterGlasses:7,sleepHours:6.25,bedtime:"10:15 PM"},
+"2026-03-05":{location:"Travel",completedHabits:["yoga","breakfast","lunch_protein","thyronorm","rozat"],steps:2085,waterGlasses:6,sleepHours:5.75,bedtime:"10:45 PM"},
+"2026-03-06":{location:"Travel",completedHabits:["yoga","breakfast","lunch_protein","protein_bar","no_dinner_after6","thyronorm","rozat"],steps:4521,waterGlasses:6,sleepHours:6,bedtime:"10:30 PM"},
+"2026-03-07":{location:"Travel",completedHabits:["yoga","resistance","breakfast","lunch_protein","protein_bar","no_dinner_after6","thyronorm","rozat"],steps:9425,waterGlasses:6,sleepHours:4.5,bedtime:"11:30 PM"},
+"2026-03-08":{location:"BLR",completedHabits:["yoga","treadmill","protein_shake","soaked_nuts","amla_fruits","breakfast","lunch_protein","acv_lunch","protein_bar","no_dinner_after6","thyronorm","rozat","folinext"],steps:8004,waterGlasses:8,sleepHours:5.5,bedtime:"11:00 PM",weightKg:71.5},
+"2026-03-09":{location:"BLR",completedHabits:["yoga","treadmill","protein_shake","soaked_nuts","amla_fruits","breakfast","lunch_protein","protein_bar","no_dinner_after6","thyronorm","rozat","folinext"],steps:7149,waterGlasses:8,sleepHours:6,bedtime:"10:30 PM"},
+"2026-03-10":{location:"BLR",completedHabits:["yoga","treadmill","protein_shake","soaked_nuts","amla_fruits","breakfast","lunch_protein","acv_lunch","protein_bar","no_dinner_after6","thyronorm","rozat","folinext"],steps:9675,waterGlasses:8,sleepHours:5.5,bedtime:"11:00 PM"},
+"2026-03-11":{location:"BLR",completedHabits:["yoga","treadmill","protein_shake","soaked_nuts","amla_fruits","breakfast","lunch_protein","protein_bar","no_dinner_after6","thyronorm","rozat","folinext"],steps:9308,waterGlasses:9,sleepHours:5.5,bedtime:"11:00 PM"},
+"2026-03-12":{location:"Travel",completedHabits:["yoga","breakfast","lunch_protein","protein_bar","no_dinner_after6","thyronorm","rozat"],steps:5997,waterGlasses:5,sleepHours:6,bedtime:"10:30 PM"},
+"2026-03-13":{location:"HYD",completedHabits:["yoga","breakfast","lunch_protein","protein_bar","light_dinner","thyronorm","rozat","folinext"],steps:5016,waterGlasses:6,sleepHours:5.5,bedtime:"11:00 PM"},
+"2026-03-14":{location:"HYD",completedHabits:["yoga","protein_shake","soaked_nuts","breakfast","lunch_protein","protein_bar","light_dinner","thyronorm","rozat","folinext"],steps:5994,waterGlasses:6,sleepHours:5.5,bedtime:"11:00 PM"},
+"2026-03-15":{location:"HYD",completedHabits:["yoga","protein_shake","breakfast","lunch_protein","protein_bar","light_dinner","thyronorm","rozat","folinext"],steps:5694,waterGlasses:6,sleepHours:5.5,bedtime:"11:00 PM"},
+"2026-03-16":{location:"BLR",completedHabits:["yoga","treadmill","protein_shake","soaked_nuts","amla_fruits","breakfast","lunch_protein","acv_lunch","protein_bar","thyronorm","rozat"],steps:9084,waterGlasses:6,sleepHours:6,bedtime:"10:30 PM"},
+"2026-03-17":{location:"BLR",completedHabits:["yoga","treadmill","protein_shake","soaked_nuts","amla_fruits","breakfast","lunch_protein","protein_bar","no_dinner_after6","thyronorm"],steps:4748,waterGlasses:6,sleepHours:6.25,bedtime:"10:15 PM"},
+"2026-03-18":{location:"BLR",completedHabits:["yoga","protein_shake","amla_fruits","breakfast","lunch_protein","no_dinner_after6","thyronorm","rozat","folinext","sleep_target"],steps:8928,waterGlasses:7,sleepHours:6.25,bedtime:"10:15 PM"},
+"2026-03-19":{location:"BLR",completedHabits:["yoga","resistance","treadmill","protein_shake","amla_fruits","breakfast","lunch_protein","acv_lunch","protein_bar","no_dinner_after6","thyronorm","rozat","folinext"],steps:6252,waterGlasses:7,sleepHours:6,bedtime:"10:30 PM"},
+"2026-03-20":{location:"BLR",completedHabits:["yoga","resistance","treadmill","protein_shake","soaked_nuts","amla_fruits","breakfast","lunch_protein","protein_bar","no_dinner_after6","thyronorm","rozat","folinext","sleep_target"],steps:10754,waterGlasses:8,sleepHours:5,bedtime:"11:30 PM"},
+"2026-03-21":{location:"BLR",completedHabits:["thyronorm","yoga","resistance","treadmill","protein_shake","soaked_nuts","amla_fruits","breakfast","acv_lunch","lunch_protein","protein_bar","folinext","no_dinner_after6","rozat","sleep_target"],steps:8652,waterGlasses:8,sleepHours:6.8,bedtime:"9:45 PM"},
+"2026-03-22":{location:"BLR",completedHabits:["yoga","resistance","treadmill","protein_shake","soaked_nuts","amla_fruits","breakfast","acv_lunch","lunch_protein","thyronorm","folinext","rozat","no_dinner_after6","protein_bar"],steps:8825,waterGlasses:8,sleepHours:6,bedtime:"10:30 PM",weightKg:72,bpSystolic:118,bpDiastolic:75},
+"2026-03-23":{location:"Travel",completedHabits:["thyronorm","yoga","resistance","breakfast","lunch_protein","protein_bar","folinext","no_dinner_after6","rozat"],steps:9459,waterGlasses:6,sleepHours:0,bedtime:""},
+"2026-03-24":{location:"BLR",completedHabits:["yoga","protein_shake","soaked_nuts","amla_fruits","breakfast","lunch_protein","acv_lunch","protein_bar","no_dinner_after6","thyronorm","rozat","folinext","sleep_target"],steps:4735,waterGlasses:6,sleepHours:6.8,bedtime:"9:45 PM"},
+"2026-03-25":{location:"BLR",completedHabits:["yoga","treadmill","resistance","protein_shake","soaked_nuts","amla_fruits","breakfast","lunch_protein","acv_lunch","protein_bar","no_dinner_after6","thyronorm","rozat","folinext"],steps:10012,waterGlasses:7,sleepHours:5.3,bedtime:"11:15 PM"},
+"2026-03-26":{location:"HYD",completedHabits:["yoga","resistance","protein_shake","soaked_nuts","amla_fruits","breakfast","thyronorm","folinext","protein_bar","rozat","light_dinner","sleep_target"],steps:7325,waterGlasses:6,sleepHours:6.5,bedtime:"10:00 PM"},
+"2026-03-27":{location:"HYD",completedHabits:["yoga","protein_shake","soaked_nuts","amla_fruits","breakfast","protein_bar","light_dinner","thyronorm","folinext","rozat"],steps:5280,waterGlasses:5,sleepHours:6,bedtime:"10:30 PM"},
+"2026-03-28":{location:"HYD",completedHabits:["yoga","resistance","protein_shake","soaked_nuts","amla_fruits","breakfast","thyronorm","folinext","rozat"],steps:7656,waterGlasses:5,sleepHours:4.5,bedtime:"12:00 AM"},
+"2026-03-29":{location:"HYD",completedHabits:["yoga","resistance","protein_shake","soaked_nuts","amla_fruits","breakfast","folinext","light_dinner","thyronorm","rozat"],steps:8467,waterGlasses:5,sleepHours:5.1,bedtime:"11:15 PM",weightKg:70.8,fastingGlucose:100},
+"2026-03-30":{location:"BLR",completedHabits:["thyronorm","protein_shake","soaked_nuts","breakfast","lunch_protein","acv_lunch","folinext","yoga","amla_fruits","protein_bar","no_dinner_after6","rozat"],steps:4600,waterGlasses:6,sleepHours:5.5,bedtime:"11:00 PM"},
+"2026-03-31":{location:"BLR",completedHabits:["yoga","treadmill","protein_shake","soaked_nuts","amla_fruits","breakfast","folinext","lunch_protein","acv_lunch","no_dinner_after6","thyronorm","rozat"],steps:10106,waterGlasses:6,sleepHours:5.2,bedtime:"11:15 PM",proteinGrams:80},
+"2026-04-01":{location:"Travel",completedHabits:["yoga","resistance","breakfast","lunch_protein","thyronorm","folinext","protein_bar","no_dinner_after6","rozat"],steps:8279,waterGlasses:7,sleepHours:4.5,bedtime:"12:00 AM"},
+"2026-04-02":{location:"BLR",completedHabits:["yoga","thyronorm","treadmill","protein_shake","soaked_nuts","amla_fruits","breakfast","lunch_protein","acv_lunch","folinext","shoonya_afternoon"],steps:9695,waterGlasses:8,sleepHours:7.3,bedtime:"9:30 PM",wakeUpTime:"4:45 AM",proteinGrams:80,weightKg:70.8},
+"2026-04-03":{location:"HYD",completedHabits:["thyronorm","yoga","folinext","shoonya_afternoon","shoonya_evening","sleep_target","rozat","resistance","light_dinner"],steps:7177,waterGlasses:6,sleepHours:7.3,bedtime:"9:45 PM",wakeUpTime:"5:00 AM",proteinGrams:10,exerciseMinutes:34,activeKcals:117,totalKcals:439}
+    };
+    var existing = DB.load();
+    for (var d in S) {
+        if (!existing[d]) { existing[d] = S[d]; }
+        else {
+            // Merge: keep existing but fill missing fields
+            for (var k in S[d]) { if (existing[d][k] === undefined || existing[d][k] === null || existing[d][k] === 0 || existing[d][k] === '') { existing[d][k] = S[d][k]; } }
+        }
+    }
+    DB.save(existing);
+    localStorage.setItem('naaarogyam_seeded_v3', '1');
+}
+
+// ====== INIT ======
+document.addEventListener('DOMContentLoaded', function() {
+    seedHistoricalData();
+    document.querySelectorAll('.tab').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            currentTab = btn.dataset.tab;
+            document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
+            btn.classList.add('active');
+            showAddEntry = false;
+            editingHistoryDate = null;
+            render();
+        });
+    });
+    render();
+
+    // Register service worker for offline PWA
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js').catch(function(err) {
+            console.log('SW registration failed:', err);
+        });
+    }
+});
+
+function render() {
+    var app = document.getElementById('app');
+    switch(currentTab) {
+        case 'dashboard': app.innerHTML = renderDashboard(); break;
+        case 'checklist':  app.innerHTML = renderChecklist(); break;
+        case 'vitals':     app.innerHTML = renderVitals(); break;
+        case 'history':    app.innerHTML = renderHistory(); break;
+        case 'outcomes':   app.innerHTML = renderOutcomes(); break;
+    }
+    attachEventListeners();
+}
+
+// ====== DASHBOARD ======
+function renderDashboard() {
+    var today = DB.todayStr();
+    var entry = DB.getEntry(today);
+    var allEntries = DB.getAllEntries();
+
+    var now = new Date();
+    var cutoff;
+    if (selectedPeriod === 'week') {
+        cutoff = getMondayOfWeek(now);
+    } else if (selectedPeriod === 'month') {
+        cutoff = new Date(now.getFullYear(), now.getMonth(), 1);
+    } else {
+        // "all" — show everything
+        cutoff = new Date(2020, 0, 1);
+    }
+    var cutoffStr = cutoff.toISOString().split('T')[0];
+    var periodData = allEntries.filter(function(e){return e.date >= cutoffStr;}).reverse();
+
+    var habits = getHabitsForLocation(entry?(entry.location||currentLocation):currentLocation);
+    var completed = entry?(entry.completedHabits||[]).filter(function(id){return habits.some(function(h){return h.id===id;});}).length:0;
+    var total = habits.length;
+    var pct = total>0?Math.round(completed/total*100):0;
+
+    // Streak
+    var streak=0;
+    var sorted=allEntries.slice().sort(function(a,b){return b.date.localeCompare(a.date);});
+    var checkDate=new Date(today+'T12:00:00');
+    for(var i=0;i<sorted.length;i++){
+        var e=sorted[i];
+        var expected=checkDate.toISOString().split('T')[0];
+        if(e.date!==expected)break;
+        var eH=getHabitsForLocation(e.location||'BLR');
+        var eD=(e.completedHabits||[]).filter(function(id){return eH.some(function(h){return h.id===id;});}).length;
+        var eP=eH.length>0?eD/eH.length*100:0;
+        if(eP>=60)streak++;else break;
+        checkDate=new Date(checkDate-86400000);
+    }
+
+    var pLen=periodData.length||1;
+    var avgComp=periodData.reduce(function(s,e){var h=getHabitsForLocation(e.location||'BLR');var d=(e.completedHabits||[]).filter(function(id){return h.some(function(hh){return hh.id===id;});}).length;return s+(h.length>0?d/h.length*100:0);},0)/pLen;
+    var avgSteps=periodData.reduce(function(s,e){return s+(e.steps||0);},0)/pLen;
+    var avgSleep=periodData.reduce(function(s,e){return s+(e.sleepHours||0);},0)/pLen;
+    var avgWater=periodData.reduce(function(s,e){return s+(e.waterGlasses||0);},0)/pLen;
+    var above80=periodData.filter(function(e){var h=getHabitsForLocation(e.location||'BLR');var d=(e.completedHabits||[]).filter(function(id){return h.some(function(hh){return hh.id===id;});}).length;return h.length>0&&d/h.length*100>=80;}).length;
+
+    // Protein & Exercise averages (only from days that have data)
+    var proteinDays=periodData.filter(function(e){return e.proteinGrams>0;});
+    var avgProtein=proteinDays.length>0?proteinDays.reduce(function(s,e){return s+e.proteinGrams;},0)/proteinDays.length:0;
+    var exerciseDays=periodData.filter(function(e){return e.exerciseMinutes>0;});
+    var avgExercise=exerciseDays.length>0?exerciseDays.reduce(function(s,e){return s+e.exerciseMinutes;},0)/exerciseDays.length:0;
+
+    var trendText='—',trendColor='var(--orange)';
+    if(periodData.length>=4){
+        var half=Math.floor(periodData.length/2);
+        var first=periodData.slice(0,half),second=periodData.slice(half);
+        var aF=first.reduce(function(s,e){var h=getHabitsForLocation(e.location||'BLR');var d=(e.completedHabits||[]).filter(function(id){return h.some(function(hh){return hh.id===id;});}).length;return s+(h.length>0?d/h.length*100:0);},0)/first.length;
+        var aS=second.reduce(function(s,e){var h=getHabitsForLocation(e.location||'BLR');var d=(e.completedHabits||[]).filter(function(id){return h.some(function(hh){return hh.id===id;});}).length;return s+(h.length>0?d/h.length*100:0);},0)/second.length;
+        var diff=aS-aF;
+        if(diff>3){trendText='↑ Improving';trendColor='var(--green)';}
+        else if(diff<-3){trendText='↓ Declining';trendColor='var(--red)';}
+        else{trendText='→ Steady';trendColor='var(--orange)';}
+    }
+
+    var periodLabels={week:'This Week',month:'This Month',all:'All Time'};
+    var loc=entry?(entry.location||currentLocation):currentLocation;
+
+    var barMaxH=110;
+    var chartBars=periodData.map(function(e){
+        var h=getHabitsForLocation(e.location||'BLR');
+        var d=(e.completedHabits||[]).filter(function(id){return h.some(function(hh){return hh.id===id;});}).length;
+        var p=h.length>0?Math.round(d/h.length*100):0;
+        var px=Math.max(Math.round(p/100*barMaxH),3);
+        return '<div class="bar-wrapper"><span class="bar-val" style="color:'+complianceColor(p)+'">'+p+'</span><div class="bar" style="height:'+px+'px;background:'+complianceColor(p)+'"></div><span class="bar-label">'+dateToNum(e.date)+'</span></div>';
+    }).join('');
+
+    var stepsData=periodData.filter(function(e){return e.steps>0;});
+    var maxSteps=Math.max.apply(null,stepsData.map(function(e){return e.steps;}).concat([8000]));
+    var stepBars=stepsData.map(function(e){
+        var px=Math.max(Math.round(e.steps/maxSteps*barMaxH),3);
+        var stepsK=(e.steps/1000).toFixed(1);
+        return '<div class="bar-wrapper"><span class="bar-val" style="color:var(--orange)">'+stepsK+'k</span><div class="bar" style="height:'+px+'px;background:var(--orange)"></div><span class="bar-label">'+dateToNum(e.date)+'</span></div>';
+    }).join('');
+
+    // Monthly breakdown for "all"
+    var monthlyHtml='';
+    if(selectedPeriod==='all'&&periodData.length>0){
+        var groups={};
+        periodData.forEach(function(e){var my=dateToMonthYear(e.date);if(!groups[my])groups[my]=[];groups[my].push(e);});
+        monthlyHtml='<div class="card"><div class="card-title">📅 Monthly Breakdown</div>';
+        for(var month in groups){
+            var entries=groups[month];
+            var mAC=entries.reduce(function(s,e){var h=getHabitsForLocation(e.location||'BLR');var d=(e.completedHabits||[]).filter(function(id){return h.some(function(hh){return hh.id===id;});}).length;return s+(h.length>0?d/h.length*100:0);},0)/entries.length;
+            var mAS=entries.filter(function(e){return e.steps>0;}).length>0?Math.round(entries.reduce(function(s,e){return s+(e.steps||0);},0)/entries.length):0;
+            var mASl=(entries.reduce(function(s,e){return s+(e.sleepHours||0);},0)/entries.length).toFixed(1);
+            var mA80=entries.filter(function(e){var h=getHabitsForLocation(e.location||'BLR');var d=(e.completedHabits||[]).filter(function(id){return h.some(function(hh){return hh.id===id;});}).length;return h.length>0&&d/h.length*100>=80;}).length;
+            monthlyHtml+='<div class="month-card"><div class="month-header"><span class="month-name">'+month+'</span><span class="month-days">'+entries.length+' days</span></div><div class="month-metrics"><div class="month-metric"><div class="month-metric-value" style="color:'+complianceColor(mAC)+'">'+Math.round(mAC)+'%</div><div class="month-metric-label">Compliance</div></div><div class="month-metric"><div class="month-metric-value" style="color:var(--orange)">'+mAS.toLocaleString()+'</div><div class="month-metric-label">Steps</div></div><div class="month-metric"><div class="month-metric-value" style="color:var(--indigo)">'+mASl+'h</div><div class="month-metric-label">Sleep</div></div><div class="month-metric"><div class="month-metric-value" style="color:var(--green)">'+mA80+'d</div><div class="month-metric-label">≥80%</div></div></div></div>';
+        }
+        monthlyHtml+='</div>';
+    }
+
+    // Active & Total Kcal bar charts
+    var activeKcalData=periodData.filter(function(e){return e.activeKcals>0;});
+    var maxActiveKcal=Math.max.apply(null,activeKcalData.map(function(e){return e.activeKcals;}).concat([300]));
+    var activeKcalBars=activeKcalData.map(function(e){
+        var px=Math.max(Math.round(e.activeKcals/maxActiveKcal*barMaxH),3);
+        return '<div class="bar-wrapper"><span class="bar-val" style="color:var(--pink)">'+Math.round(e.activeKcals)+'</span><div class="bar" style="height:'+px+'px;background:var(--pink)"></div><span class="bar-label">'+dateToNum(e.date)+'</span></div>';
+    }).join('');
+    var totalKcalData=periodData.filter(function(e){return e.totalKcals>0;});
+    var maxTotalKcal=Math.max.apply(null,totalKcalData.map(function(e){return e.totalKcals;}).concat([2500]));
+    var totalKcalBars=totalKcalData.map(function(e){
+        var px=Math.max(Math.round(e.totalKcals/maxTotalKcal*barMaxH),3);
+        return '<div class="bar-wrapper"><span class="bar-val" style="color:var(--yellow)">'+Math.round(e.totalKcals)+'</span><div class="bar" style="height:'+px+'px;background:var(--yellow)"></div><span class="bar-label">'+dateToNum(e.date)+'</span></div>';
+    }).join('');
+    var avgActiveKcal=activeKcalData.length>0?activeKcalData.reduce(function(s,e){return s+e.activeKcals;},0)/activeKcalData.length:0;
+    var avgTotalKcal=totalKcalData.length>0?totalKcalData.reduce(function(s,e){return s+e.totalKcals;},0)/totalKcalData.length:0;
+
+    // Location-wise compliance
+    var locCompHtml='';
+    var locGroups={};
+    periodData.forEach(function(e){var l=e.location||'BLR';if(!locGroups[l])locGroups[l]=[];locGroups[l].push(e);});
+    var locCompItems=[];
+    for(var lk in locGroups){
+        var lg=locGroups[lk];
+        var lAvg=lg.reduce(function(s,e){var h=getHabitsForLocation(e.location||'BLR');var d=(e.completedHabits||[]).filter(function(id){return h.some(function(hh){return hh.id===id;});}).length;return s+(h.length>0?d/h.length*100:0);},0)/lg.length;
+        var lEmoji=LOCATIONS[lk]?LOCATIONS[lk].emoji:'📍';
+        var lName=LOCATIONS[lk]?LOCATIONS[lk].name:lk;
+        locCompItems.push('<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:0.5px solid rgba(255,255,255,0.05)"><div style="display:flex;align-items:center;gap:8px"><span>'+lEmoji+'</span><span style="font-size:14px;font-weight:500">'+lName+'</span><span style="font-size:11px;color:var(--text3)">'+lg.length+' days</span></div><div style="display:flex;align-items:center;gap:8px"><div style="width:60px;height:6px;background:var(--card2);border-radius:3px;overflow:hidden"><div style="width:'+Math.round(lAvg)+'%;height:100%;background:'+complianceColor(lAvg)+';border-radius:3px"></div></div><span style="font-size:15px;font-weight:700;color:'+complianceColor(lAvg)+';min-width:40px;text-align:right">'+Math.round(lAvg)+'%</span></div></div>');
+    }
+    locCompHtml='<div class="card"><div class="card-title">📍 Compliance by Location</div>'+locCompItems.join('')+'</div>';
+
+    var noDataMsg='<div style="text-align:center;color:var(--text3);font-size:12px;padding:20px 0">No data yet — start tracking!</div>';
+
+    return '<div class="page-header"><h1>NaaAarogyam</h1><div class="subtitle">My Health</div></div>'+
+        '<div class="card today-card"><div class="today-info"><h2>Today</h2><div class="today-location">'+LOCATIONS[loc].emoji+' '+LOCATIONS[loc].name+'</div><div class="metric-chips"><span class="metric-chip" style="color:var(--green)">✅ '+completed+'/'+total+'</span><span class="metric-chip" style="color:var(--blue)">💧 '+(entry?entry.waterGlasses||0:0)+'</span><span class="metric-chip" style="color:var(--orange)">🚶 '+(entry?(entry.steps||0).toLocaleString():0)+'</span></div></div>'+renderRing(pct,90)+'</div>'+
+        '<div class="card streak-card"><div><div style="color:var(--orange);font-weight:600;font-size:14px">🔥 Current Streak</div><div style="color:var(--text2);font-size:12px;margin-top:2px">'+streak+' day'+(streak===1?'':'s')+' ≥ 60%</div></div><div class="streak-number">'+streak+'🔥</div></div>'+
+        '<div class="period-picker"><button class="period-btn '+(selectedPeriod==='week'?'active':'')+'" onclick="setPeriod(\'week\')">W</button><button class="period-btn '+(selectedPeriod==='month'?'active':'')+'" onclick="setPeriod(\'month\')">M</button><button class="period-btn '+(selectedPeriod==='all'?'active':'')+'" onclick="setPeriod(\'all\')">All</button></div>'+
+        '<div class="card"><div class="card-title">📈 '+periodLabels[selectedPeriod]+' <span style="font-weight:400;color:var(--text2);font-size:12px;margin-left:auto">'+periodData.length+' days</span></div><div class="insights-grid"><div class="insight-pill"><div class="insight-value" style="color:'+complianceColor(avgComp)+'">'+Math.round(avgComp)+'%</div><div class="insight-label">Avg Compliance</div></div><div class="insight-pill"><div class="insight-value" style="color:var(--orange)">'+Math.round(avgSteps).toLocaleString()+'</div><div class="insight-label">Avg Steps</div></div><div class="insight-pill"><div class="insight-value" style="color:var(--indigo)">'+avgSleep.toFixed(1)+'h</div><div class="insight-label">Avg Sleep</div></div><div class="insight-pill"><div class="insight-value" style="color:var(--blue)">'+Math.round(avgWater)+'</div><div class="insight-label">Avg Water</div></div><div class="insight-pill"><div class="insight-value" style="color:var(--green)">'+above80+'/'+periodData.length+'</div><div class="insight-label">≥80% Days</div></div><div class="insight-pill"><div class="insight-value" style="color:'+trendColor+'">'+trendText+'</div><div class="insight-label">Trend</div></div></div></div>'+
+        '<div class="card"><div class="card-title">📊 Compliance</div><div class="chart-container"><div class="bar-chart">'+(chartBars||noDataMsg)+'</div></div></div>'+
+        '<div class="card"><div class="card-title">🚶 Steps <span style="font-weight:400;color:var(--text2);font-size:12px;margin-left:auto">Avg: '+Math.round(avgSteps).toLocaleString()+'</span></div><div class="chart-container"><div class="bar-chart">'+(stepBars||noDataMsg)+'</div></div></div>'+
+        (activeKcalBars?'<div class="card"><div class="card-title">🔥 Active Kcals <span style="font-weight:400;color:var(--text2);font-size:12px;margin-left:auto">Avg: '+Math.round(avgActiveKcal)+'</span></div><div class="chart-container"><div class="bar-chart">'+activeKcalBars+'</div></div></div>':'')+
+        (totalKcalBars?'<div class="card"><div class="card-title">🔥 Total Kcals <span style="font-weight:400;color:var(--text2);font-size:12px;margin-left:auto">Avg: '+Math.round(avgTotalKcal)+'</span></div><div class="chart-container"><div class="bar-chart">'+totalKcalBars+'</div></div></div>':'')+
+        locCompHtml+
+        monthlyHtml+
+        '<div class="metrics-grid"><div class="metric-card"><div class="metric-card-header"><span class="metric-card-icon">🌙</span><span class="metric-card-title">Avg Sleep</span></div><div class="metric-card-value" style="color:var(--indigo)">'+avgSleep.toFixed(1)+'h</div><div class="metric-card-sub">'+periodLabels[selectedPeriod]+'</div></div><div class="metric-card"><div class="metric-card-header"><span class="metric-card-icon">💧</span><span class="metric-card-title">Avg Water</span></div><div class="metric-card-value" style="color:var(--blue)">'+Math.round(avgWater)+' glasses</div><div class="metric-card-sub">'+periodLabels[selectedPeriod]+'</div></div><div class="metric-card"><div class="metric-card-header"><span class="metric-card-icon">🚶</span><span class="metric-card-title">Avg Steps</span></div><div class="metric-card-value" style="color:var(--orange)">'+Math.round(avgSteps).toLocaleString()+'</div><div class="metric-card-sub">'+periodLabels[selectedPeriod]+'</div></div><div class="metric-card"><div class="metric-card-header"><span class="metric-card-icon">✅</span><span class="metric-card-title">Compliance</span></div><div class="metric-card-value" style="color:var(--green)">'+Math.round(avgComp)+'%</div><div class="metric-card-sub">'+periodLabels[selectedPeriod]+'</div></div>'+(avgProtein>0?'<div class="metric-card"><div class="metric-card-header"><span class="metric-card-icon">🍗</span><span class="metric-card-title">Avg Protein</span></div><div class="metric-card-value" style="color:var(--cyan)">'+Math.round(avgProtein)+'g</div><div class="metric-card-sub">'+proteinDays.length+' days tracked</div></div>':'')+(avgExercise>0?'<div class="metric-card"><div class="metric-card-header"><span class="metric-card-icon">🏃</span><span class="metric-card-title">Avg Exercise</span></div><div class="metric-card-value" style="color:var(--purple)">'+Math.round(avgExercise)+' min</div><div class="metric-card-sub">'+exerciseDays.length+' days tracked</div></div>':'')+'</div>'+
+        '<div class="card"><div class="card-title">🛠️ Tools</div><div class="tools-grid"><button class="tool-btn" onclick="exportData()"><span class="tool-icon">📤</span>Export Data<span class="tool-label">Download JSON backup</span></button><button class="tool-btn" onclick="document.getElementById(\'import-file-input\').click()"><span class="tool-icon">📥</span>Import Data<span class="tool-label">Restore from backup</span></button><button class="tool-btn" onclick="downloadInsights()"><span class="tool-icon">📋</span>Download Insights<span class="tool-label">Save summary report</span></button><button class="tool-btn" onclick="shareInsights()"><span class="tool-icon">📤</span>Share Insights<span class="tool-label">Detailed health report</span></button></div><input type="file" id="import-file-input" accept=".json" onchange="importData(event)"></div>';
+}
+
+function renderRing(pct,size) {
+    size=size||90;var r=(size-10)/2;var circ=2*Math.PI*r;var offset=circ-(pct/100)*circ;var color=complianceColor(pct);
+    return '<div class="ring-container" style="width:'+size+'px;height:'+size+'px"><svg width="'+size+'" height="'+size+'"><circle cx="'+(size/2)+'" cy="'+(size/2)+'" r="'+r+'" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="8"/><circle cx="'+(size/2)+'" cy="'+(size/2)+'" r="'+r+'" fill="none" stroke="'+color+'" stroke-width="8" stroke-dasharray="'+circ+'" stroke-dashoffset="'+offset+'" stroke-linecap="round" style="transition:stroke-dashoffset 0.8s ease"/></svg><div class="ring-text"><div class="ring-percent" style="color:'+color+'">'+pct+'%</div><div class="ring-label">Today</div></div></div>';
+}
+
+function setPeriod(p){selectedPeriod=p;render();}
+
+// ====== CHECKLIST ======
+function renderChecklist() {
+    var today=DB.todayStr();
+    var entry=DB.getEntry(today);
+    if(!entry){entry={location:currentLocation,completedHabits:[],steps:0,waterGlasses:0,sleepHours:0,bedtime:'',wakeUpTime:''};DB.saveEntry(today,entry);}
+    var loc=entry.location||currentLocation;
+    var habits=getHabitsForLocation(loc);
+    var done=entry.completedHabits||[];
+    var completed=done.filter(function(id){return habits.some(function(h){return h.id===id;});}).length;
+    var pct=habits.length>0?Math.round(completed/habits.length*100):0;
+
+    var grouped={};
+    habits.forEach(function(h){if(!grouped[h.category])grouped[h.category]=[];grouped[h.category].push(h);});
+
+    var sectionsHtml='';
+    var catOrder=['exercise','nutrition','fasting','medication','meditation','sleep'];
+    for(var ci=0;ci<catOrder.length;ci++){
+        var cat=catOrder[ci];var items=grouped[cat];
+        if(!items||items.length===0)continue;
+        var c=CATEGORIES[cat];
+        var rows=items.map(function(h){
+            var isDone=done.indexOf(h.id)>=0;
+            return '<div class="habit-row" data-habit="'+h.id+'"><div class="habit-check '+(isDone?'checked':'unchecked')+'" style="'+(isDone?'background:'+c.color:'')+'">'+( isDone?'✓':c.icon)+'</div><div style="flex:1"><div class="habit-name '+(isDone?'done':'')+'">'+h.name+'</div>'+(h.note?'<div class="habit-note">'+h.note+'</div>':'')+'</div>'+(h.time?'<span class="habit-time">'+h.time+'</span>':'')+'</div>';
+        }).join('');
+        sectionsHtml+='<div class="habit-section"><div class="habit-category-label" style="color:'+c.color+'">'+c.icon+' '+c.name+'</div><div class="habit-list">'+rows+'</div></div>';
+    }
+
+    var locPickerHtml=Object.keys(LOCATIONS).map(function(k){
+        var v=LOCATIONS[k];var cnt=getHabitsForLocation(k).length;
+        return '<button class="loc-btn '+(loc===k?'active':'')+'" data-loc="'+k+'"><div class="loc-emoji">'+v.emoji+'</div><div class="loc-name">'+k+'</div><div class="loc-count">'+cnt+' items</div></button>';
+    }).join('');
+
+    return '<div class="page-header"><h1>Today\'s Habits</h1><div class="subtitle">'+todayDateDisplay()+'</div></div>'+
+        '<div class="location-picker">'+locPickerHtml+'</div>'+
+        '<div class="summary-bar"><div class="summary-pill"><div class="summary-value">'+completed+'/'+habits.length+'</div><div class="summary-label">Done</div></div><div class="summary-pill"><div class="summary-value" style="color:'+complianceColor(pct)+'">'+pct+'%</div><div class="summary-label">Score</div></div><div class="summary-pill"><div class="summary-value">'+loc+'</div><div class="summary-label">Location</div></div></div>'+
+        sectionsHtml;
+}
+
+// ====== VITALS ======
+function renderVitals() {
+    var today=DB.todayStr();
+    var entry=DB.getEntry(today)||{};
+    var sunday=isSunday(today);
+
+    // Sleep calc: bedtime from PREVIOUS day's entry + wakeup from today
+    var prevDate=new Date(today+'T12:00:00');prevDate.setDate(prevDate.getDate()-1);
+    var prevDateStr=prevDate.toISOString().split('T')[0];
+    var prevEntry=DB.getEntry(prevDateStr);
+    var prevBedtime=prevEntry?prevEntry.bedtime:'';
+    var sleepCalc=calcSleepHours(prevBedtime,entry.wakeUpTime);
+
+    var bedOpts='<option value="">Select</option>'+BEDTIME_OPTIONS.map(function(t){return '<option value="'+t+'"'+(entry.bedtime===t?' selected':'')+'>'+t+'</option>';}).join('');
+    var wakeOpts='<option value="">Select</option>'+WAKEUP_OPTIONS.map(function(t){return '<option value="'+t+'"'+(entry.wakeUpTime===t?' selected':'')+'>'+t+'</option>';}).join('');
+
+    var sundayHtml='';
+    if(sunday){
+        sundayHtml='<div class="form-section"><div class="form-section-title">📊 Sunday Vitals</div><div style="background:rgba(255,159,10,0.1);border-radius:10px;padding:10px 14px;margin-bottom:8px;font-size:12px;color:var(--orange)">Sunday check-in unlocked!</div><div class="form-group"><div class="form-row"><span class="form-icon">⚖️</span><span class="form-label">Weight (kg)</span><input class="form-input" id="v-weight" type="number" step="0.1" placeholder="e.g. 71.5" value="'+(entry.weightKg||'')+'"></div><div class="form-row"><span class="form-icon">❤️</span><span class="form-label">BP Systolic</span><input class="form-input" id="v-bpsys" type="number" placeholder="e.g. 130" value="'+(entry.bpSystolic||'')+'"></div><div class="form-row"><span class="form-icon">🫀</span><span class="form-label">BP Diastolic</span><input class="form-input" id="v-bpdia" type="number" placeholder="e.g. 80" value="'+(entry.bpDiastolic||'')+'"></div><div class="form-row"><span class="form-icon">🩸</span><span class="form-label">Fasting Glucose</span><input class="form-input" id="v-glucose" type="number" step="0.1" placeholder="mg/dL" value="'+(entry.fastingGlucose||'')+'"></div></div></div>';
+    }
+
+    return '<div class="page-header"><h1>Vitals</h1><div class="subtitle">'+todayDateDisplay()+'</div></div>'+
+        '<div class="form-section"><div class="form-section-title">📊 Daily Metrics</div><div class="form-group"><div class="form-row"><span class="form-icon">🚶</span><span class="form-label">Steps</span><input class="form-input" id="v-steps" type="number" placeholder="e.g. 8000" value="'+(entry.steps||'')+'"></div><div class="form-row"><span class="form-icon">💧</span><span class="form-label">Water (glasses)</span><input class="form-input" id="v-water" type="number" placeholder="e.g. 8" value="'+(entry.waterGlasses||'')+'"></div><div class="form-row"><span class="form-icon">🍗</span><span class="form-label">Protein (g)</span><input class="form-input" id="v-protein" type="number" step="0.1" placeholder="e.g. 80" value="'+(entry.proteinGrams||'')+'"></div><div class="form-row"><span class="form-icon">🏃</span><span class="form-label">Exercise (min)</span><input class="form-input" id="v-exercise" type="number" placeholder="e.g. 45" value="'+(entry.exerciseMinutes||'')+'"></div><div class="form-row"><span class="form-icon">🔥</span><span class="form-label">Active Kcals</span><input class="form-input" id="v-activecal" type="number" step="0.1" placeholder="e.g. 350" value="'+(entry.activeKcals||'')+'"></div><div class="form-row"><span class="form-icon">🔥</span><span class="form-label">Total Kcals</span><input class="form-input" id="v-totalcal" type="number" step="0.1" placeholder="e.g. 2200" value="'+(entry.totalKcals||'')+'"></div></div></div>'+
+        '<div class="form-section"><div class="form-section-title">🌙 Sleep & Wake</div><div class="form-group"><div class="form-row"><span class="form-icon">🛏️</span><span class="form-label">Bedtime</span><select class="form-select" id="v-bedtime">'+bedOpts+'</select></div><div class="form-row"><span class="form-icon">⏰</span><span class="form-label">Wake-up</span><select class="form-select" id="v-wakeup">'+wakeOpts+'</select></div><div class="form-row"><span class="form-icon">😴</span><span class="form-label">Sleep (hrs)</span><input class="form-input" id="v-sleep" type="number" step="0.1" placeholder="auto" value="'+(entry.sleepHours||'')+'">'+(sleepCalc?'<span class="form-calc">('+sleepCalc+'h)</span>':'')+'</div></div><div style="font-size:11px;color:var(--text3);margin-top:6px;padding-left:4px">'+(prevBedtime?'Last night bedtime: '+prevBedtime+'. ':'')+'Auto-calc = prev night bedtime − today wake-up.</div></div>'+
+        sundayHtml+
+        '<button class="save-btn" onclick="saveVitals()">Save Vitals</button>';
+}
+
+// ====== HISTORY ======
+function renderHistory() {
+    var entries=DB.getAllEntries();
+
+    // Add entry button & form
+    var addBtnHtml='<button class="add-entry-toggle" onclick="toggleAddEntry()">＋ Add / Edit Past Entry</button>';
+
+    var addFormHtml='';
+    if(showAddEntry){
+        var ed=editingHistoryDate?DB.getEntry(editingHistoryDate):null;
+        var edLoc=ed?(ed.location||'BLR'):'BLR';
+
+        var locOptions=Object.keys(LOCATIONS).map(function(k){
+            return '<option value="'+k+'"'+(edLoc===k?' selected':'')+'>'+LOCATIONS[k].emoji+' '+k+'</option>';
+        }).join('');
+
+        var bedOpts2='<option value="">Select</option>'+BEDTIME_OPTIONS.map(function(t){return '<option value="'+t+'"'+(ed&&ed.bedtime===t?' selected':'')+'>'+t+'</option>';}).join('');
+        var wakeOpts2='<option value="">Select</option>'+WAKEUP_OPTIONS.map(function(t){return '<option value="'+t+'"'+(ed&&ed.wakeUpTime===t?' selected':'')+'>'+t+'</option>';}).join('');
+
+        // Build habit checklist for editing
+        var edHabits=getHabitsForLocation(edLoc);
+        var edDone=ed?(ed.completedHabits||[]):[];
+        var edGrouped={};
+        edHabits.forEach(function(h){if(!edGrouped[h.category])edGrouped[h.category]=[];edGrouped[h.category].push(h);});
+        var edCatOrder=['exercise','nutrition','fasting','medication','meditation','sleep'];
+        var habitChecklistHtml='<div style="margin:12px 0"><div style="font-size:13px;font-weight:600;margin-bottom:8px;color:var(--text2)">✅ Habits</div>';
+        for(var ci2=0;ci2<edCatOrder.length;ci2++){
+            var cat2=edCatOrder[ci2];var items2=edGrouped[cat2];
+            if(!items2||items2.length===0)continue;
+            var c2=CATEGORIES[cat2];
+            habitChecklistHtml+='<div style="font-size:11px;font-weight:600;color:'+c2.color+';margin:8px 0 4px;padding-left:2px">'+c2.icon+' '+c2.name+'</div>';
+            items2.forEach(function(h){
+                var checked=edDone.indexOf(h.id)>=0;
+                habitChecklistHtml+='<label style="display:flex;align-items:center;gap:10px;padding:6px 2px;cursor:pointer;font-size:14px"><input type="checkbox" class="ae-habit-cb" data-habit="'+h.id+'"'+(checked?' checked':'')+' style="width:20px;height:20px;accent-color:'+c2.color+'"><span'+(checked?' style="color:var(--text2)"':'')+'">'+h.name+'</span></label>';
+            });
+        }
+        habitChecklistHtml+='</div>';
+
+        addFormHtml='<div class="add-entry-form"><div style="font-size:15px;font-weight:600;margin-bottom:12px">'+(editingHistoryDate?'Edit Entry: '+editingHistoryDate:'Add New Entry')+'</div>'+
+            '<div class="form-row"><span class="form-icon">📅</span><span class="form-label">Date</span><input class="form-input" id="ae-date" type="date" value="'+(editingHistoryDate||'')+'" max="'+DB.todayStr()+'" onchange="onHistoryDateChange()"></div>'+
+            '<div class="form-row"><span class="form-icon">📍</span><span class="form-label">Location</span><select class="form-select" id="ae-loc" onchange="onHistoryLocChange()">'+locOptions+'</select></div>'+
+            habitChecklistHtml+
+            '<div style="font-size:13px;font-weight:600;margin:12px 0 8px;color:var(--text2)">📊 Vitals</div>'+
+            '<div class="form-row"><span class="form-icon">🚶</span><span class="form-label">Steps</span><input class="form-input" id="ae-steps" type="number" placeholder="0" value="'+(ed?ed.steps||'':'')+'"></div>'+
+            '<div class="form-row"><span class="form-icon">💧</span><span class="form-label">Water</span><input class="form-input" id="ae-water" type="number" placeholder="0" value="'+(ed?ed.waterGlasses||'':'')+'"></div>'+
+            '<div class="form-row"><span class="form-icon">🛏️</span><span class="form-label">Bedtime</span><select class="form-select" id="ae-bedtime">'+bedOpts2+'</select></div>'+
+            '<div class="form-row"><span class="form-icon">⏰</span><span class="form-label">Wake-up</span><select class="form-select" id="ae-wakeup">'+wakeOpts2+'</select></div>'+
+            '<div class="form-row"><span class="form-icon">😴</span><span class="form-label">Sleep (hrs)</span><input class="form-input" id="ae-sleep" type="number" step="0.1" placeholder="auto" value="'+(ed?ed.sleepHours||'':'')+'"></div>'+
+            '<div class="form-row"><span class="form-icon">🍗</span><span class="form-label">Protein (g)</span><input class="form-input" id="ae-protein" type="number" step="0.1" placeholder="0" value="'+(ed?ed.proteinGrams||'':'')+'"></div>'+
+            '<div class="form-row"><span class="form-icon">🏃</span><span class="form-label">Exercise (min)</span><input class="form-input" id="ae-exercise" type="number" placeholder="0" value="'+(ed?ed.exerciseMinutes||'':'')+'"></div>'+
+            '<div class="form-row"><span class="form-icon">🔥</span><span class="form-label">Active Kcals</span><input class="form-input" id="ae-activecal" type="number" step="0.1" placeholder="0" value="'+(ed?ed.activeKcals||'':'')+'"></div>'+
+            '<div class="form-row"><span class="form-icon">🔥</span><span class="form-label">Total Kcals</span><input class="form-input" id="ae-totalcal" type="number" step="0.1" placeholder="0" value="'+(ed?ed.totalKcals||'':'')+'"></div>'+
+            '<div class="form-row"><span class="form-icon">⚖️</span><span class="form-label">Weight (kg)</span><input class="form-input" id="ae-weight" type="number" step="0.1" placeholder="" value="'+(ed?ed.weightKg||'':'')+'"></div>'+
+            '<div style="display:flex;gap:8px;margin-top:12px"><button class="save-btn" onclick="saveAddEntry()" style="flex:1">Save Entry</button><button class="save-btn" onclick="toggleAddEntry()" style="flex:0.5;background:var(--card2)">Cancel</button></div></div>';
+    }
+
+    var rowsHtml='';
+    if(entries.length===0){
+        rowsHtml='<div style="text-align:center;color:var(--text3);padding:60px 20px"><div style="font-size:40px;margin-bottom:12px">📅</div><div>No history yet. Start tracking daily!</div></div>';
+    } else {
+        rowsHtml='<div class="card" style="padding:0;overflow:hidden">'+entries.map(function(e){
+            var habits=getHabitsForLocation(e.location||'BLR');
+            var done=(e.completedHabits||[]).filter(function(id){return habits.some(function(h){return h.id===id;});}).length;
+            var pct=habits.length>0?Math.round(done/habits.length*100):0;
+            return '<div class="history-row" onclick="editHistoryEntry(\''+e.date+'\')" style="cursor:pointer"><div class="history-date"><div class="history-day">'+dateToDay(e.date)+'</div><div class="history-num">'+dateToNum(e.date)+'</div><div class="history-month">'+dateToMonth(e.date)+'</div></div><div class="history-info"><div class="history-location">'+(LOCATIONS[e.location||'BLR']?LOCATIONS[e.location||'BLR'].emoji:'📍')+' '+(LOCATIONS[e.location||'BLR']?LOCATIONS[e.location||'BLR'].name:e.location)+'</div><div class="history-metrics"><span>✅ '+done+'/'+habits.length+'</span>'+(e.sleepHours?'<span>😴 '+Number(e.sleepHours).toFixed(1)+'h</span>':'')+(e.steps?'<span>🚶 '+Number(e.steps).toLocaleString()+'</span>':'')+'</div></div><div class="history-badge" style="background:'+complianceColor(pct)+'22;color:'+complianceColor(pct)+'">'+pct+'%</div></div>';
+        }).join('')+'</div>';
+    }
+
+    return '<div class="page-header"><h1>History</h1></div>'+addBtnHtml+addFormHtml+rowsHtml;
+}
+
+function toggleAddEntry() {
+    showAddEntry=!showAddEntry;
+    if(!showAddEntry) editingHistoryDate=null;
+    render();
+}
+
+function editHistoryEntry(dateStr) {
+    editingHistoryDate=dateStr;
+    showAddEntry=true;
+    render();
+    setTimeout(function(){ var f=document.querySelector('.add-entry-form'); if(f) f.scrollIntoView({behavior:'smooth'}); },100);
+}
+
+function onHistoryDateChange() {
+    var dateEl=document.getElementById('ae-date');
+    if(dateEl&&dateEl.value){
+        editingHistoryDate=dateEl.value;
+        render();
+        setTimeout(function(){ var f=document.querySelector('.add-entry-form'); if(f) f.scrollIntoView({behavior:'smooth'}); },100);
+    }
+}
+
+function onHistoryLocChange() {
+    // Re-render to show habits for the new location, preserving form state
+    var dateEl=document.getElementById('ae-date');
+    var locEl=document.getElementById('ae-loc');
+    if(dateEl&&dateEl.value){
+        var dateStr=dateEl.value;
+        var entry=DB.getEntry(dateStr)||{location:'BLR',completedHabits:[]};
+        entry.location=locEl.value;
+        DB.saveEntry(dateStr,entry);
+        editingHistoryDate=dateStr;
+        render();
+        setTimeout(function(){ var f=document.querySelector('.add-entry-form'); if(f) f.scrollIntoView({behavior:'smooth'}); },100);
+    }
+}
+
+function saveAddEntry() {
+    var dateEl=document.getElementById('ae-date');
+    var dateStr=dateEl?dateEl.value:'';
+    if(!dateStr){showToast('Please select a date');return;}
+
+    var entry=DB.getEntry(dateStr)||{location:'BLR',completedHabits:[]};
+    entry.location=document.getElementById('ae-loc').value||'BLR';
+
+    // Collect checked habits
+    var checkedHabits=[];
+    document.querySelectorAll('.ae-habit-cb').forEach(function(cb){
+        if(cb.checked) checkedHabits.push(cb.dataset.habit);
+    });
+    entry.completedHabits=checkedHabits;
+
+    entry.steps=parseInt(document.getElementById('ae-steps').value)||entry.steps||0;
+    entry.waterGlasses=parseInt(document.getElementById('ae-water').value)||entry.waterGlasses||0;
+    entry.bedtime=document.getElementById('ae-bedtime').value||entry.bedtime||'';
+    entry.wakeUpTime=document.getElementById('ae-wakeup').value||entry.wakeUpTime||'';
+    entry.proteinGrams=parseFloat(document.getElementById('ae-protein').value)||null;
+    entry.exerciseMinutes=parseInt(document.getElementById('ae-exercise').value)||null;
+    entry.activeKcals=parseFloat(document.getElementById('ae-activecal').value)||null;
+    entry.totalKcals=parseFloat(document.getElementById('ae-totalcal').value)||null;
+    entry.weightKg=parseFloat(document.getElementById('ae-weight').value)||entry.weightKg||null;
+
+    var manualSleep=parseFloat(document.getElementById('ae-sleep').value);
+    if(manualSleep>0){entry.sleepHours=manualSleep;}
+    else{
+        // Auto-calc: previous day's bedtime + this entry's wakeup
+        var prevD2=new Date(dateStr+'T12:00:00');prevD2.setDate(prevD2.getDate()-1);
+        var prevDS2=prevD2.toISOString().split('T')[0];
+        var prevE2=DB.getEntry(prevDS2);
+        var prevBed2=prevE2?prevE2.bedtime:'';
+        var calc=calcSleepHours(prevBed2,entry.wakeUpTime);
+        if(calc)entry.sleepHours=parseFloat(calc);
+    }
+
+    DB.saveEntry(dateStr,entry);
+    showAddEntry=false;
+    editingHistoryDate=null;
+    render();
+    showToast('Entry saved for '+dateStr+' ✓');
+}
+
+// ====== OUTCOMES ======
+function renderOutcomes() {
+    var labs=DB.getLabs();
+    if(!labs){labs=LAB_DEFAULTS.map(function(l){return Object.assign({},l,{current:null,currentDate:null});});DB.saveLabs(labs);}
+
+    var filtered=labs.filter(function(l){return l.category===selectedLabCat;});
+    var statusColors={red:'var(--red)',yellow:'var(--yellow)',green:'var(--green)'};
+
+    var allEntries=DB.getAllEntries().filter(function(e){return e.weightKg;}).reverse();
+    var weightHtml='';
+    if(allEntries.length>0){
+        var latest=Number(allEntries[allEntries.length-1].weightKg);
+        var first=Number(allEntries[0].weightKg);
+        var change=latest-first;
+        weightHtml='<div class="card"><div class="card-title">⚖️ Weight Progress</div><div class="weight-summary"><div><div class="weight-stat-label">Start</div><div class="weight-stat-value">'+first.toFixed(1)+' kg</div></div><div><div class="weight-stat-label">Current</div><div class="weight-stat-value">'+latest.toFixed(1)+' kg</div></div><div><div class="weight-stat-label">Change</div><div class="weight-stat-value" style="color:'+(change<0?'var(--green)':'var(--red)')+'">'+(change>0?'+':'')+change.toFixed(1)+' kg</div></div><div><div class="weight-stat-label">Target</div><div class="weight-stat-value" style="color:var(--green)">66–67 kg</div></div></div></div>';
+    }
+
+    var labCards=filtered.map(function(l){
+        var currentDisplay='';
+        if(l.current){
+            currentDisplay='<div class="lab-val-group"><div class="lab-val-label">Current'+(l.currentDate?' ('+l.currentDate+')':'')+'</div><div class="lab-val-num" style="color:var(--accent)">'+l.current+'</div></div>';
+        }
+
+        return '<div class="lab-card"><div class="lab-header"><div class="lab-dot" style="background:'+(statusColors[l.status]||'var(--yellow)')+'"></div><div class="lab-name">'+l.parameter+'</div><div class="lab-unit">'+l.unit+'</div></div><div class="lab-values"><div class="lab-val-group"><div class="lab-val-label">Baseline</div><div class="lab-val-num" style="color:'+statusColors[l.status]+'">'+l.baseline+'</div></div><div class="lab-arrow">→</div><div class="lab-val-group"><div class="lab-val-label">Target</div><div class="lab-val-num" style="color:var(--green)">'+l.target+'</div></div><div style="flex:1"></div>'+currentDisplay+'</div><div class="lab-ref">Ref: '+l.ref+'</div>'+
+            '<div class="lab-input-row"><input type="text" id="lab-val-'+l.parameter.replace(/\s+/g,'_')+'" placeholder="New value" value=""><input type="date" id="lab-date-'+l.parameter.replace(/\s+/g,'_')+'" value="'+DB.todayStr()+'"><button onclick="saveLabResult(\''+l.parameter+'\')">Save</button></div></div>';
+    }).join('');
+
+    var flagged=labs.filter(function(l){return l.status==='red';});
+    var flaggedHtml='';
+    if(flagged.length>0){
+        flaggedHtml='<div class="card"><div class="card-title" style="color:var(--red)">⚠️ High-Priority Parameters</div>'+flagged.map(function(l){
+            return '<div style="display:flex;align-items:center;gap:8px;padding:4px 0"><span style="font-size:12px;min-width:110px">'+l.parameter+'</span><div style="flex:1;height:6px;background:var(--card2);border-radius:3px;overflow:hidden"><div style="width:80%;height:100%;background:rgba(255,69,58,0.6);border-radius:3px"></div></div><span style="font-size:10px;color:var(--text2)">→ '+l.target+'</span></div>';
+        }).join('')+'</div>';
+    }
+
+    var catPickerHtml=['metabolic','thyroid','lipids','other'].map(function(c){
+        return '<button class="cat-btn '+(selectedLabCat===c?'active':'')+'" onclick="setLabCat(\''+c+'\')">'+c.charAt(0).toUpperCase()+c.slice(1)+'</button>';
+    }).join('');
+
+    return '<div class="page-header"><h1>Outcomes</h1></div>'+
+        '<div class="baseline-banner"><span class="baseline-icon">📅</span><div><div class="baseline-title">Baseline: 28 Feb 2026</div><div class="baseline-sub">3-Month Review: Jun 2026 · 6-Month: Sep 2026</div></div></div>'+
+        weightHtml+
+        '<div class="cat-picker">'+catPickerHtml+'</div>'+
+        labCards+
+        flaggedHtml+
+        '<div class="card"><div class="card-title">🏁 Milestones</div><div class="milestone-row"><span class="milestone-icon">⚖️</span><div><div class="milestone-title">3-Month Weight</div><div class="milestone-detail">Target 70 kg by Jun 2026</div></div></div><div class="milestone-row"><span class="milestone-icon">⚖️</span><div><div class="milestone-title">6-Month Weight</div><div class="milestone-detail">Target 66–67 kg by Sep 2026</div></div></div><div class="milestone-row"><span class="milestone-icon">🧪</span><div><div class="milestone-title">Lab Review</div><div class="milestone-detail">Full panel at 3 months (Jun 2026)</div></div></div><div class="milestone-row"><span class="milestone-icon">❤️</span><div><div class="milestone-title">Anti-TPO + T3/T4</div><div class="milestone-detail">Pending – book endocrinologist</div></div></div><div class="milestone-row"><span class="milestone-icon">💜</span><div><div class="milestone-title">Fibroscan</div><div class="milestone-detail">Pending – target <6.0 kPa</div></div></div></div>';
+}
+
+function setLabCat(c){selectedLabCat=c;render();}
+
+function saveLabResult(param) {
+    var safeId=param.replace(/\s+/g,'_');
+    var valEl=document.getElementById('lab-val-'+safeId);
+    var dateEl=document.getElementById('lab-date-'+safeId);
+    var val=valEl?valEl.value.trim():'';
+    var date=dateEl?dateEl.value:'';
+    if(!val){showToast('Enter a value');return;}
+
+    var labs=DB.getLabs();
+    var lab=labs.find(function(l){return l.parameter===param;});
+    if(lab){
+        lab.current=val;
+        lab.currentDate=date;
+        DB.saveLabs(labs);
+        render();
+        showToast(param+' updated ✓');
+    }
+}
+
+// ====== EVENT LISTENERS ======
+function attachEventListeners() {
+    document.querySelectorAll('.habit-row').forEach(function(row){
+        row.addEventListener('click',function(){
+            var id=row.dataset.habit;
+            var today=DB.todayStr();
+            var entry=DB.getEntry(today);if(!entry)return;
+            var completed=entry.completedHabits||[];
+            var idx=completed.indexOf(id);
+            if(idx>=0)completed.splice(idx,1);else completed.push(id);
+            entry.completedHabits=completed;
+            DB.saveEntry(today,entry);render();
+        });
+    });
+    document.querySelectorAll('.loc-btn').forEach(function(btn){
+        btn.addEventListener('click',function(){
+            var loc=btn.dataset.loc;currentLocation=loc;
+            localStorage.setItem('naa_location',loc);
+            var today=DB.todayStr();
+            var entry=DB.getEntry(today)||{completedHabits:[],steps:0,waterGlasses:0,sleepHours:0,bedtime:'',wakeUpTime:''};
+            entry.location=loc;DB.saveEntry(today,entry);render();
+        });
+    });
+}
+
+// ====== SAVE VITALS ======
+function saveVitals() {
+    var today=DB.todayStr();
+    var entry=DB.getEntry(today)||{location:currentLocation,completedHabits:[]};
+    entry.steps=parseInt(document.getElementById('v-steps').value)||entry.steps||0;
+    entry.waterGlasses=parseInt(document.getElementById('v-water').value)||entry.waterGlasses||0;
+    entry.proteinGrams=parseFloat(document.getElementById('v-protein').value)||null;
+    entry.exerciseMinutes=parseInt(document.getElementById('v-exercise').value)||null;
+    entry.activeKcals=parseFloat(document.getElementById('v-activecal').value)||null;
+    entry.totalKcals=parseFloat(document.getElementById('v-totalcal').value)||null;
+    entry.bedtime=document.getElementById('v-bedtime').value||entry.bedtime||'';
+    entry.wakeUpTime=document.getElementById('v-wakeup').value||entry.wakeUpTime||'';
+    var manualSleep=parseFloat(document.getElementById('v-sleep').value);
+    if(manualSleep>0){entry.sleepHours=manualSleep;}
+    else{
+        // Auto-calc: previous day's bedtime + today's wakeup
+        var prevD=new Date(today+'T12:00:00');prevD.setDate(prevD.getDate()-1);
+        var prevDS=prevD.toISOString().split('T')[0];
+        var prevE=DB.getEntry(prevDS);
+        var prevBed=prevE?prevE.bedtime:'';
+        var calc=calcSleepHours(prevBed,entry.wakeUpTime);
+        if(calc)entry.sleepHours=parseFloat(calc);
+    }
+    if(isSunday(today)){
+        var w=document.getElementById('v-weight')?parseFloat(document.getElementById('v-weight').value):NaN;
+        var s=document.getElementById('v-bpsys')?parseInt(document.getElementById('v-bpsys').value):NaN;
+        var d=document.getElementById('v-bpdia')?parseInt(document.getElementById('v-bpdia').value):NaN;
+        var g=document.getElementById('v-glucose')?parseFloat(document.getElementById('v-glucose').value):NaN;
+        if(w)entry.weightKg=w;if(s)entry.bpSystolic=s;if(d)entry.bpDiastolic=d;if(g)entry.fastingGlucose=g;
+    }
+    DB.saveEntry(today,entry);showToast('Vitals saved ✓');
+}
+
+// ====== EXPORT DATA ======
+function exportData() {
+    var allData = {
+        habits: DB.load(),
+        labs: DB.getLabs(),
+        exportDate: new Date().toISOString(),
+        version: 'NaaAarogyam-Web-v2'
+    };
+    var json = JSON.stringify(allData, null, 2);
+    var blob = new Blob([json], {type: 'application/json'});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'NaaAarogyam_' + DB.todayStr() + '_backup.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('Data exported successfully');
+}
+
+// ====== IMPORT DATA ======
+function importData(event) {
+    var file = event.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            var imported = JSON.parse(e.target.result);
+            var habitData = null;
+            var labData = null;
+
+            // Support both web export format and iOS export format
+            if (imported.habits && typeof imported.habits === 'object') {
+                // Web export format
+                habitData = imported.habits;
+                labData = imported.labs || null;
+            } else if (typeof imported === 'object') {
+                // Raw habit data or iOS format - try to detect
+                var keys = Object.keys(imported);
+                var looksLikeDates = keys.some(function(k) { return /^\d{4}-\d{2}-\d{2}$/.test(k); });
+                if (looksLikeDates) {
+                    habitData = imported;
+                }
+            }
+
+            if (!habitData) {
+                showToast('Invalid backup file format');
+                return;
+            }
+
+            // Merge with existing data
+            var existing = DB.load();
+            var newCount = 0;
+            var updatedCount = 0;
+            for (var d in habitData) {
+                if (!existing[d]) {
+                    existing[d] = habitData[d];
+                    newCount++;
+                } else {
+                    // Merge fields
+                    for (var k in habitData[d]) {
+                        if (existing[d][k] === undefined || existing[d][k] === null || existing[d][k] === 0 || existing[d][k] === '') {
+                            existing[d][k] = habitData[d][k];
+                        }
+                    }
+                    updatedCount++;
+                }
+            }
+            DB.save(existing);
+
+            if (labData) {
+                DB.saveLabs(labData);
+            }
+
+            render();
+            showToast('Imported: ' + newCount + ' new, ' + updatedCount + ' merged');
+        } catch (err) {
+            showToast('Error reading file: ' + err.message);
+        }
+    };
+    reader.readAsText(file);
+    // Reset input so same file can be re-imported
+    event.target.value = '';
+}
+
+// ====== GENERATE INSIGHTS TEXT ======
+function generateInsightsText(detailed) {
+    var allEntries = DB.getAllEntries();
+    var today = DB.todayStr();
+    var entry = DB.getEntry(today);
+    var loc = entry ? (entry.location || currentLocation) : currentLocation;
+
+    // Today stats
+    var habits = getHabitsForLocation(loc);
+    var done = entry ? (entry.completedHabits || []).filter(function(id) { return habits.some(function(h) { return h.id === id; }); }).length : 0;
+    var todayPct = habits.length > 0 ? Math.round(done / habits.length * 100) : 0;
+
+    // Period stats
+    var periodLabels = { week: 'This Week', month: 'This Month', all: 'All Time' };
+    var now = new Date();
+    var cutoff;
+    if (selectedPeriod === 'week') { cutoff = getMondayOfWeek(now); }
+    else if (selectedPeriod === 'month') { cutoff = new Date(now.getFullYear(), now.getMonth(), 1); }
+    else { cutoff = new Date(2020, 0, 1); }
+    var cutoffStr = cutoff.toISOString().split('T')[0];
+    var periodData = allEntries.filter(function(e) { return e.date >= cutoffStr; });
+
+    var pLen = periodData.length || 1;
+    var avgComp = periodData.reduce(function(s, e) {
+        var h = getHabitsForLocation(e.location || 'BLR');
+        var d = (e.completedHabits || []).filter(function(id) { return h.some(function(hh) { return hh.id === id; }); }).length;
+        return s + (h.length > 0 ? d / h.length * 100 : 0);
+    }, 0) / pLen;
+    var avgSteps = periodData.reduce(function(s, e) { return s + (e.steps || 0); }, 0) / pLen;
+    var avgSleep = periodData.reduce(function(s, e) { return s + (e.sleepHours || 0); }, 0) / pLen;
+    var avgWater = periodData.reduce(function(s, e) { return s + (e.waterGlasses || 0); }, 0) / pLen;
+    var above80 = periodData.filter(function(e) {
+        var h = getHabitsForLocation(e.location || 'BLR');
+        var d = (e.completedHabits || []).filter(function(id) { return h.some(function(hh) { return hh.id === id; }); }).length;
+        return h.length > 0 && d / h.length * 100 >= 80;
+    }).length;
+
+    // Streak
+    var streak = 0;
+    var sorted = allEntries.slice().sort(function(a, b) { return b.date.localeCompare(a.date); });
+    var checkDate = new Date(today + 'T12:00:00');
+    for (var i = 0; i < sorted.length; i++) {
+        var se = sorted[i];
+        var expected = checkDate.toISOString().split('T')[0];
+        if (se.date !== expected) break;
+        var eH = getHabitsForLocation(se.location || 'BLR');
+        var eD = (se.completedHabits || []).filter(function(id) { return eH.some(function(h) { return h.id === id; }); }).length;
+        var eP = eH.length > 0 ? eD / eH.length * 100 : 0;
+        if (eP >= 60) streak++; else break;
+        checkDate = new Date(checkDate - 86400000);
+    }
+
+    var text = '=== NaaAarogyam Health Report ===\n';
+    text += 'Date: ' + today + '\n';
+    text += 'Location: ' + LOCATIONS[loc].name + '\n\n';
+
+    text += '--- Today ---\n';
+    text += 'Compliance: ' + todayPct + '% (' + done + '/' + habits.length + ' habits)\n';
+    text += 'Steps: ' + (entry ? (entry.steps || 0).toLocaleString() : '0') + '\n';
+    text += 'Water: ' + (entry ? entry.waterGlasses || 0 : 0) + ' glasses\n';
+    text += 'Sleep: ' + (entry ? (entry.sleepHours || 0) + 'h' : '—') + '\n';
+    text += 'Streak: ' + streak + ' days >= 60%\n\n';
+
+    text += '--- ' + periodLabels[selectedPeriod] + ' (' + periodData.length + ' days) ---\n';
+    text += 'Avg Compliance: ' + Math.round(avgComp) + '%\n';
+    text += 'Avg Steps: ' + Math.round(avgSteps).toLocaleString() + '\n';
+    text += 'Avg Sleep: ' + avgSleep.toFixed(1) + 'h\n';
+    text += 'Avg Water: ' + Math.round(avgWater) + ' glasses\n';
+    text += 'Days >= 80%: ' + above80 + '/' + periodData.length + '\n';
+
+    if (detailed) {
+        // Weight trend
+        var weightEntries = allEntries.filter(function(e) { return e.weightKg; }).reverse();
+        if (weightEntries.length > 0) {
+            var latestW = weightEntries[weightEntries.length - 1];
+            var firstW = weightEntries[0];
+            text += '\n--- Weight ---\n';
+            text += 'Latest: ' + latestW.weightKg + ' kg (' + latestW.date + ')\n';
+            text += 'First: ' + firstW.weightKg + ' kg (' + firstW.date + ')\n';
+            text += 'Change: ' + (latestW.weightKg - firstW.weightKg).toFixed(1) + ' kg\n';
+            text += 'Target: 66-67 kg\n';
+        }
+
+        // Lab highlights
+        var labs = DB.getLabs();
+        if (labs) {
+            var redLabs = labs.filter(function(l) { return l.status === 'red'; });
+            if (redLabs.length > 0) {
+                text += '\n--- Priority Lab Parameters ---\n';
+                redLabs.forEach(function(l) {
+                    text += l.parameter + ': Baseline ' + l.baseline + ' ' + l.unit + ' -> Target ' + l.target;
+                    if (l.current) text += ' (Current: ' + l.current + ')';
+                    text += '\n';
+                });
+            }
+        }
+
+        // Daily breakdown for period
+        text += '\n--- Daily Log (' + periodLabels[selectedPeriod] + ') ---\n';
+        periodData.reverse().forEach(function(e) {
+            var h = getHabitsForLocation(e.location || 'BLR');
+            var d = (e.completedHabits || []).filter(function(id) { return h.some(function(hh) { return hh.id === id; }); }).length;
+            var p = h.length > 0 ? Math.round(d / h.length * 100) : 0;
+            text += e.date + ' | ' + (LOCATIONS[e.location] ? LOCATIONS[e.location].name : e.location) +
+                ' | ' + p + '% | ' + (e.steps || 0) + ' steps | ' +
+                (e.sleepHours || 0) + 'h sleep | ' + (e.waterGlasses || 0) + ' water\n';
+        });
+    }
+
+    text += '\n--- Generated by NaaAarogyam ---';
+    return text;
+}
+
+// ====== DOWNLOAD INSIGHTS ======
+function downloadInsights() {
+    var text = generateInsightsText(true);
+    var blob = new Blob([text], { type: 'text/plain' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'NaaAarogyam_Insights_' + DB.todayStr() + '.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('Insights downloaded');
+}
+
+// ====== SHARE INSIGHTS ======
+function shareInsights() {
+    var text = generateInsightsText(true);
+
+    if (navigator.share) {
+        navigator.share({
+            title: 'NaaAarogyam Health Report - ' + DB.todayStr(),
+            text: text
+        }).then(function() {
+            showToast('Shared successfully');
+        }).catch(function(err) {
+            if (err.name !== 'AbortError') {
+                // Fallback to clipboard
+                copyToClipboard(text);
+            }
+        });
+    } else {
+        copyToClipboard(text);
+    }
+}
+
+function copyToClipboard(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function() {
+            showToast('Report copied to clipboard');
+        }).catch(function() {
+            fallbackCopy(text);
+        });
+    } else {
+        fallbackCopy(text);
+    }
+}
+
+function fallbackCopy(text) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('Report copied to clipboard');
+}
+
+function showToast(msg) {
+    var toast=document.querySelector('.toast');
+    if(!toast){toast=document.createElement('div');toast.className='toast';document.body.appendChild(toast);}
+    toast.textContent=msg;toast.classList.add('show');
+    setTimeout(function(){toast.classList.remove('show');},2000);
+}
+    </script>
+</body>
+</html>
