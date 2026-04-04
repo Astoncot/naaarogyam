@@ -582,6 +582,38 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('SW registration failed:', err);
         });
     }
+
+    // Track current date so we detect day changes
+    var _lastRenderedDate = DB.todayStr();
+
+    // Re-render when app comes back to foreground (e.g. after sleep/background)
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden) {
+            var now = DB.todayStr();
+            if (now !== _lastRenderedDate) {
+                _lastRenderedDate = now;
+                render();
+            }
+        }
+    });
+
+    // Also check on window focus (covers more edge cases on iOS)
+    window.addEventListener('focus', function() {
+        var now = DB.todayStr();
+        if (now !== _lastRenderedDate) {
+            _lastRenderedDate = now;
+            render();
+        }
+    });
+
+    // Periodic check every 60s in case app stays in foreground across midnight
+    setInterval(function() {
+        var now = DB.todayStr();
+        if (now !== _lastRenderedDate) {
+            _lastRenderedDate = now;
+            render();
+        }
+    }, 60000);
 });
 
 function render() {
